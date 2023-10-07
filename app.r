@@ -225,9 +225,7 @@ ui <- bootstrapPage(
         leafletOutput("mymap", width="100%", height="100%"),
         absolutePanel(id = "controls", class = "panel panel-default",
                       top = 150, left = 55, width = 250, fixed=TRUE, height = "auto", draggable = TRUE,
-                      sliderInput("year", "Select a Year:",
-                        min = min(selectDF$year), max = max(selectDF$year),
-                        value = 2000),
+                      textInput("year", "Enter Year (1851-2021):", value="1990"), # Range: 1851-2021
                       selectInput("species", "Select a type of GHG:",
                         c("Total GHG" = "total_ghg",
                         "CO2" = "co2",
@@ -257,12 +255,8 @@ ui <- bootstrapPage(
                                "CO2" = "co2",
                                "Methane" = 'methane',
                                "Nitrous Oxide" = 'nitrous_oxide'), selected = "co2"),
-                 sliderInput("start_year", "Select Start Year",
-                            min = min(selectDF$year), max = max(selectDF$year),
-                           value = 1980),
-                 sliderInput("end_year", "Select End Year",
-                           min = min(selectDF$year), max = max(selectDF$year),
-                           value = 2000),
+               textInput("start_year", "Enter Start Year (1851-2021):", value="1980"), # Range: 1851-2021
+               textInput("end_year", "Enter End Year (1851-2021):", value="2000"), # Range: 1851-2021
                   "If the line plot is not displaying properly, it means that we don't have enough data from the selected choices to render a reasonable plot."
                ),
 
@@ -280,9 +274,7 @@ ui <- bootstrapPage(
     tabPanel("Comparison",
              sidebarLayout(
                sidebarPanel(
-                 sliderInput("year_comparison", "Select a Year to Compare:",
-                             min = 1990, max = max(selectDF$year),
-                             value = 1990),
+                 textInput("year_comparison", "Enter Year (1851-2021):", value="1990"), # Range: 1851-2021
                  checkboxGroupInput("checkGroup", 
                                     h3("Choose Emission Types to Compare"), 
                                     choices = list("Nitrous Oxide" = "nitrous_oxide",
@@ -334,7 +326,7 @@ server <- function(input, output) {
   })
   # plot total emission per year in Map
   pal_PerYear <- reactive({
-    colorBin("Oranges", domain = yearDF()$total, pretty = TRUE)})
+    colorBin("Oranges", domain = yearDF()$total, bins = c(0, 10, 50, 100, 500, 1000, 2000, Inf))})
   mapPerYear <- renderLeaflet(
     leaflet(WorldCountry) %>%
       addTiles() %>%
@@ -359,7 +351,7 @@ server <- function(input, output) {
 
   # plot emission per year and per capita
   pal_PerCap <- reactive({
-    colorBin("Oranges", domain = yearDF()$per_capita, pretty = TRUE)})
+    colorBin("Oranges", domain = yearDF()$per_capita, bins = c(0, 1, 2, 5, 10, 15, 20, Inf))})
   mapPerCap <- renderLeaflet(
     leaflet(WorldCountry) %>%
       addTiles() %>%
@@ -383,7 +375,7 @@ server <- function(input, output) {
 
   # plot emission per year and per gdp
   pal_PerGDP <- reactive({
-    colorBin("Oranges", domain = yearDF()$per_gdp, pretty = TRUE)})
+    colorBin("Oranges", domain = yearDF()$per_gdp, bins = c(0, 0.2, 0.5, 1, 1.5, 2, Inf))})
   mapPerGDP <- renderLeaflet(
     leaflet(WorldCountry) %>%
       addTiles() %>%
