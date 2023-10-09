@@ -20,9 +20,9 @@ library(leaflet)    # The map-making package
 library(geojsonio)  # A package for geographic and spatial data, requires the latest version of dplyr
 library(dplyr)      # Used for data manipulation and merging
 library(htmltools)  # Used for constructing map labels using HTML
-library(ggplot2)
-library(tidyverse) 
-library(naniar)
+library(ggplot2).   # A versatile package for creating plots.
+library(tidyverse)  # Includes a variety of tools for data analysis.
+library(naniar).    # Assists in handling and visualizing missing data.
 
 
 rawDF <- read_csv("data/raw_data.csv") 
@@ -36,13 +36,15 @@ observationDF %>%  ggplot(mapping = aes(x = year, y = total)) +
 
 rawDF <- rawDF %>% filter(year > 1850) 
 
- max(rawDF $ year)
+max(rawDF $ year)
 
+# Rename "United States" to "United States of America" for consistency.
 maniDF <- rawDF %>% mutate(country = case_when(
   country == "United States" ~ "United States of America",
   TRUE ~ country
 ))
 
+# Add new columns to represent emissions normalized by GDP.
 maniDF <- maniDF  %>%  
   mutate(
     ghg_per_gdp = total_ghg / gdp,
@@ -50,29 +52,32 @@ maniDF <- maniDF  %>%
     nitrous_oxide_per_gdp = nitrous_oxide / gdp
   )
 
-
+# Save the manipulated dataset to a new CSV file.
 maniDF %>% write_csv("data/rawDF.csv")
 
+# Extract specific columns from the dataset for further analysis.
 selectDF <- maniDF[, c("country", "year", "co2", "population", "gdp")]
-```
-```{r}
+
 # Visualize missing data
 gg_miss_upset(rawDF, nset = 10)
 ```
 
 ```{r}
-# summary(rawDF[rawDF$country == "United States",])
+# Extract data for the year 2021
 data_2021 <- rawDF[rawDF$year == 2021, ]
 
+# Order the data by CO2 emissions in descending order and select the top 20
 top_20_co2 <- data_2021 %>%
-  arrange(-co2) %>% 
-  head(20)
+  arrange(-co2) %>%  # Arrange data by 'co2' in descending order
+  head(20)           # Select the top 20 rows
 
-ggplot(top_20_co2, aes(x = reorder(country, co2), y = co2)) + 
-  geom_col() + 
-  labs(title="Top 20 Areas/Countries by CO2 Emissions in 2021", x="Country", y="CO2 Emissions") + 
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+# Plot the CO2 emissions for the top 20 countries/areas in 2021
+ggplot(top_20_co2, aes(x = reorder(country, co2), y = co2)) +  # Reorder countries based on 'co2' for the x-axis
+  geom_col() +  # Use column geometry for the plot
+  labs(title="Top 20 Areas/Countries by CO2 Emissions in 2021", x="Country", y="CO2 Emissions") +  # Add labels
+  theme_minimal() +  # Use a minimal theme for the plot
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for better readability
+
 
 ```
 
