@@ -1,6 +1,6 @@
 # Load Required Packages
-library(tidyverse)
-library(rsconnect)
+if(!require(tidyverse)) install.packages("tidyverse", repos = "http://cran.us.r-project.org")
+if(!require(rsconnect)) install.packages("rsconnect", repos = "http://cran.us.r-project.org")
 if(!require(ggplot2)) install.packages("ggplot2", repos = "http://cran.us.r-project.org")
 if(!require(leaflet)) install.packages("leaflet", repos = "http://cran.us.r-project.org")
 if(!require(plotly)) install.packages("plotly", repos = "http://cran.us.r-project.org")
@@ -15,148 +15,287 @@ if(!require(modeldata)) install.packages("modeldata", repos = "http://cran.us.r-
 if(!require(networkD3)) install.packages("networkD3", repos = "http://cran.us.r-project.org")
 
 
-# Read in data set that will be visualizewd. 
+# ------------------------------------------------------------------------------
+# DATA PREPARATION AND TRANSFORMATION
+# ------------------------------------------------------------------------------
+
+# Read in the primary dataset that will be used for visualization
 rawDF <- read_csv("data/rawDF.csv")
+
+# Select only relevant columns from the raw dataset for further analysis
 selectDF <- rawDF[, c("country", "year", "co2", "co2_per_capita", "co2_per_gdp",
                       "total_ghg", "ghg_per_capita", "ghg_per_gdp",
                       "methane", "methane_per_capita", "methane_per_gdp",
                       "nitrous_oxide", 'nitrous_oxide_per_capita', "nitrous_oxide_per_gdp")]
+
+# Initialize a list to store categorical breakdowns of the dataset
 catOfDF <- vector(mode="list", length=4)
 names(catOfDF) <- c("total_ghg", "co2", "methane", "nitrous_oxide")
+
+# Break down the selected data by total greenhouse gas emissions and its respective metrics
 catOfDF[[1]] <- selectDF %>%
   select("country", "year", "total_ghg", "ghg_per_capita", "ghg_per_gdp") %>%
   rename( "total" = "total_ghg",
           "per_capita" = "ghg_per_capita",
           "per_gdp" = "ghg_per_gdp")
+
+# Break down the selected data by CO2 emissions and its respective metrics
 catOfDF[[2]] <- selectDF %>%
   select("country", "year", "co2", "co2_per_capita", "co2_per_gdp") %>%
   rename( "total" = "co2",
           "per_capita" = "co2_per_capita",
           "per_gdp" = "co2_per_gdp")
+
+# Break down the selected data by methane emissions and its respective metrics
 catOfDF[[3]] <- selectDF %>%
   select("country", "year", "methane", "methane_per_capita", "methane_per_gdp") %>%
   rename( "total" = "methane",
           "per_capita" = "methane_per_capita",
           "per_gdp" = "methane_per_gdp")
+
+# Break down the selected data by nitrous oxide emissions and its respective metrics
 catOfDF[[4]] <- selectDF %>%
   select("country", "year", "nitrous_oxide", "nitrous_oxide_per_capita", "nitrous_oxide_per_gdp") %>%
   rename( "total" = "nitrous_oxide",
           "per_capita" = "nitrous_oxide_per_capita",
           "per_gdp" = "nitrous_oxide_per_gdp")
 
+# The catOfDF list now contains four data frames, each representing a different category of emissions
 
-# Line plot functions
+
+# ------------------------------------------------------------------------------
+# LINE PLOT FUNCTIONS
+# ------------------------------------------------------------------------------
+
+# CO2 EMISSIONS BY YEAR
+# This function plots CO2 emissions over a specified range of years for a given country.
 co2_year_plot<-function(input, coun, year1, year2) {
+  # Filter data based on the specified years, non-zero CO2 values, and country
   plot_df = subset(input, year>=year1 & year<=year2 & co2!=0 & country == coun)
-  g1 = ggplot(plot_df, aes(x = year, y = co2, color = country)) + geom_line() + geom_point(size = 1, alpha = 0.8) +
-    ylab("co2 emission") +  xlab("Year") + theme_bw() + 
-    #    scale_colour_manual(values=c(covid_col)) +
-    #   scale_y_continuous(labels = function(l) {trans = l / 1000000; paste0(trans, "M")}) +
-    theme(legend.title = element_blank(), legend.position = "", plot.title = element_text(size=10), 
-          plot.margin = margin(5, 12, 5, 5))
-  g1
+  
+  # Create the plot
+  g1 = ggplot(plot_df, aes(x = year, y = co2, color = country)) + 
+    geom_line() + 
+    geom_point(size = 1, alpha = 0.8) +
+    ylab("CO2 emission") + 
+    xlab("Year") + 
+    theme_bw() + 
+    theme(legend.title = element_blank(), legend.position = "", plot.title = element_text(size=10), plot.margin = margin(5, 12, 5, 5))
+  
+  return(g1)
 }
 
+# CO2 EMISSIONS PER CAPITA
+# This function plots CO2 emissions per capita over a specified range of years for a given country.
 co2_per_capita_plot<-function(input, coun, year1, year2) {
+  # Filter data based on the specified years, non-zero CO2 per capita values, and country
   plot_df = subset(input, year>=year1 & year<=year2 & co2_per_capita!=0 & country == coun)
-  g1 = ggplot(plot_df, aes(x = year, y = co2_per_capita, color = country)) + geom_line() + geom_point(size = 1, alpha = 0.8) +
-    ylab("co2_per_capita") +  xlab("Year") + theme_bw() + 
-    theme(legend.title = element_blank(), legend.position = "", plot.title = element_text(size=10), 
-          plot.margin = margin(5, 12, 5, 5))
-  g1
+  
+  # Create the plot
+  g1 = ggplot(plot_df, aes(x = year, y = co2_per_capita, color = country)) + 
+    geom_line() + 
+    geom_point(size = 1, alpha = 0.8) +
+    ylab("CO2 emission per capita") + 
+    xlab("Year") + 
+    theme_bw() + 
+    theme(legend.title = element_blank(), legend.position = "", plot.title = element_text(size=10), plot.margin = margin(5, 12, 5, 5))
+  
+  return(g1)
 }
-
+# CO2 EMISSIONS PER GDP
+# This function plots CO2 emissions per GDP over a specified range of years for a given country.
 co2_per_gdp_plot<-function(input, coun, year1, year2) {
+  # Filter data based on the specified years, non-zero CO2 per GDP values, and country
   plot_df = subset(input, year>=year1 & year<=year2 & co2_per_gdp!=0 & country == coun)
-  g1 = ggplot(plot_df, aes(x = year, y = co2_per_gdp, color = country)) + geom_line() + geom_point(size = 1, alpha = 0.8) +
-    ylab("co2_per_gdp") +  xlab("Year") + theme_bw() + 
-    theme(legend.title = element_blank(), legend.position = "", plot.title = element_text(size=10), 
-          plot.margin = margin(5, 12, 5, 5))
-  g1
+  
+  # Create the plot
+  g1 = ggplot(plot_df, aes(x = year, y = co2_per_gdp, color = country)) + 
+    geom_line() + 
+    geom_point(size = 1, alpha = 0.8) +
+    ylab("CO2 emission per GDP") + 
+    xlab("Year") + 
+    theme_bw() + 
+    theme(legend.title = element_blank(), legend.position = "", plot.title = element_text(size=10), plot.margin = margin(5, 12, 5, 5))
+  
+  return(g1)
 }
 
+# METHANE EMISSIONS BY YEAR
+# This function plots methane emissions over a specified range of years for a given country.
 ch4_year_plot<-function(input, coun, year1, year2) {
+  # Filter data based on the specified years, non-zero methane values, and country
   plot_df = subset(input, year>=year1 & year<=year2 & methane!=0 & country == coun)
-  g1 = ggplot(plot_df, aes(x = year, y = methane, color = country)) + geom_line() + geom_point(size = 1, alpha = 0.8) +
-    ylab("methane emission") +  xlab("Year") + theme_bw() + 
-    theme(legend.title = element_blank(), legend.position = "", plot.title = element_text(size=10), 
-          plot.margin = margin(5, 12, 5, 5))
-  g1
+  
+  # Create the plot
+  g1 = ggplot(plot_df, aes(x = year, y = methane, color = country)) + 
+    geom_line() + 
+    geom_point(size = 1, alpha = 0.8) +
+    ylab("Methane emission") + 
+    xlab("Year") + 
+    theme_bw() + 
+    theme(legend.title = element_blank(), legend.position = "", plot.title = element_text(size=10), plot.margin = margin(5, 12, 5, 5))
+  
+  return(g1)
 }
 
+# METHANE EMISSIONS PER CAPITA
+# This function plots methane emissions per capita over a specified range of years for a given country.
 ch4_per_capita_plot<-function(input, coun, year1, year2) {
+  # Filter data based on the specified years, non-zero methane per capita values, and country
   plot_df = subset(input, year>=year1 & year<=year2 & methane_per_capita!=0 & country == coun)
-  g1 = ggplot(plot_df, aes(x = year, y = methane_per_capita, color = country)) + geom_line() + geom_point(size = 1, alpha = 0.8) +
-    ylab("methane_per_capita") +  xlab("Year") + theme_bw() + 
-    theme(legend.title = element_blank(), legend.position = "", plot.title = element_text(size=10), 
-          plot.margin = margin(5, 12, 5, 5))
-  g1
+  
+  # Create the plot
+  g1 = ggplot(plot_df, aes(x = year, y = methane_per_capita, color = country)) + 
+    geom_line() + 
+    geom_point(size = 1, alpha = 0.8) +
+    ylab("Methane emission per capita") + 
+    xlab("Year") + 
+    theme_bw() + 
+    theme(legend.title = element_blank(), legend.position = "", plot.title = element_text(size=10), plot.margin = margin(5, 12, 5, 5))
+  
+  return(g1)
 }
 
+# METHANE EMISSIONS PER GDP
+# This function plots methane emissions per GDP over a specified range of years for a given country.
 ch4_per_gdp_plot<-function(input, coun, year1, year2) {
+  # Filter data based on the specified years, non-zero methane per GDP values, and country
   plot_df = subset(input, year>=year1 & year<=year2 & methane_per_gdp!=0 & country == coun)
-  g1 = ggplot(plot_df, aes(x = year, y = methane_per_gdp, color = country)) + geom_line() + geom_point(size = 1, alpha = 0.8) +
-    ylab("methane_per_gdp") +  xlab("Year") + theme_bw() + 
-    theme(legend.title = element_blank(), legend.position = "", plot.title = element_text(size=10), 
-          plot.margin = margin(5, 12, 5, 5))
-  g1
+  
+  # Create the plot
+  g1 = ggplot(plot_df, aes(x = year, y = methane_per_gdp, color = country)) + 
+    geom_line() + 
+    geom_point(size = 1, alpha = 0.8) +
+    ylab("Methane emission per GDP") + 
+    xlab("Year") + 
+    theme_bw() + 
+    theme(legend.title = element_blank(), legend.position = "", plot.title = element_text(size=10), plot.margin = margin(5, 12, 5, 5))
+  
+  return(g1)
 }
 
+# NITROUS OXIDE EMISSIONS BY YEAR
+# This function plots nitrous oxide emissions over a specified range of years for a given country.
 no2_year_plot<-function(input, coun, year1, year2) {
+  # Filter data based on the specified years, non-zero nitrous oxide values, and country
   plot_df = subset(input, year>=year1 & year<=year2 & nitrous_oxide!=0 & country == coun)
-  g1 = ggplot(plot_df, aes(x = year, y = nitrous_oxide, color = country)) + geom_line() + geom_point(size = 1, alpha = 0.8) +
-    ylab("no2 emission") +  xlab("Year") + theme_bw() + 
-    theme(legend.title = element_blank(), legend.position = "", plot.title = element_text(size=10), 
-          plot.margin = margin(5, 12, 5, 5))
-  g1
+  
+  # Create the plot
+  g1 = ggplot(plot_df, aes(x = year, y = nitrous_oxide, color = country)) + 
+    geom_line() + 
+    geom_point(size = 1, alpha = 0.8) +
+    ylab("NO2 emission") + 
+    xlab("Year") + 
+    theme_bw() + 
+    theme(legend.title = element_blank(), legend.position = "", plot.title = element_text(size=10), plot.margin = margin(5, 12, 5, 5))
+  
+  return(g1)
 }
 
+# NITROUS OXIDE EMISSIONS PER CAPITA
+# This function plots nitrous oxide emissions per capita over a specified range of years for a given country.
 no2_per_capita_plot<-function(input, coun, year1, year2) {
+  # Filter data based on the specified years, non-zero nitrous oxide per capita values, and country
   plot_df = subset(input, year>=year1 & year<=year2 & nitrous_oxide_per_capita!=0 & country == coun)
-  g1 = ggplot(plot_df, aes(x = year, y = nitrous_oxide_per_capita, color = country)) + geom_line() + geom_point(size = 1, alpha = 0.8) +
-    ylab("no2_per_capita") +  xlab("Year") + theme_bw() + 
-    theme(legend.title = element_blank(), legend.position = "", plot.title = element_text(size=10), 
-          plot.margin = margin(5, 12, 5, 5))
-  g1
+  
+  # Create the plot
+  g1 = ggplot(plot_df, aes(x = year, y = nitrous_oxide_per_capita, color = country)) + 
+    geom_line() + 
+    geom_point(size = 1, alpha = 0.8) +
+    ylab("NO2 emission per capita") + 
+    xlab("Year") + 
+    theme_bw() + 
+    theme(legend.title = element_blank(), legend.position = "", plot.title = element_text(size=10), plot.margin = margin(5, 12, 5, 5))
+  
+  return(g1)
 }
 
+# NITROUS OXIDE EMISSIONS PER GDP
+# This function plots nitrous oxide emissions per GDP over a specified range of years for a given country.
 no2_per_gdp_plot<-function(input, coun, year1, year2) {
+  # Filter data based on the specified years, non-zero nitrous oxide per GDP values, and country
   plot_df = subset(input, year>=year1 & year<=year2 & nitrous_oxide_per_gdp!=0 & country == coun)
-  g1 = ggplot(plot_df, aes(x = year, y = nitrous_oxide_per_gdp, color = country)) + geom_line() + geom_point(size = 1, alpha = 0.8) +
-    ylab("no2_per_gdp") +  xlab("Year") + theme_bw() + 
-    theme(legend.title = element_blank(), legend.position = "", plot.title = element_text(size=10), 
-          plot.margin = margin(5, 12, 5, 5))
-  g1
+  
+  # Create the plot
+  g1 = ggplot(plot_df, aes(x = year, y = nitrous_oxide_per_gdp, color = country)) + 
+    geom_line() + 
+    geom_point(size = 1, alpha = 0.8) +
+    ylab("NO2 emission per GDP") + 
+    xlab("Year") + 
+    theme_bw() + 
+    theme(legend.title = element_blank(), legend.position = "", plot.title = element_text(size=10), plot.margin = margin(5, 12, 5, 5))
+  
+  return(g1)
 }
 
+# TOTAL GREENHOUSE GAS EMISSIONS BY YEAR
+# This function plots total greenhouse gas emissions over a specified range of years for a given country.
 total_ghg_plot<-function(input, coun, year1, year2) {
+  # Filter data based on the specified years, non-zero total greenhouse gas values, and country
   plot_df = subset(input, year>=year1 & year<=year2 & total_ghg!=0 & country == coun)
-  g1 = ggplot(plot_df, aes(x = year, y = total_ghg, color = country)) + geom_line() + geom_point(size = 1, alpha = 0.8) +
-    ylab("total greenhouse gas emission") +  xlab("Year") + theme_bw() + 
-    theme(legend.title = element_blank(), legend.position = "", plot.title = element_text(size=10), 
-          plot.margin = margin(5, 12, 5, 5))
-  g1
+  
+  # Create the plot
+  g1 = ggplot(plot_df, aes(x = year, y = total_ghg, color = country)) + 
+    geom_line() + 
+    geom_point(size = 1, alpha = 0.8) +
+    ylab("Total greenhouse gas emission") + 
+    xlab("Year") + 
+    theme_bw() + 
+    theme(legend.title = element_blank(), legend.position = "", plot.title = element_text(size=10), plot.margin = margin(5, 12, 5, 5))
+  
+  return(g1)
 }
 
+# TOTAL GREENHOUSE GAS EMISSIONS PER CAPITA BY YEAR
+# This function plots total greenhouse gas emissions per capita over a specified range of years for a given country.
 total_ghg_per_capita<-function(input, coun, year1, year2) {
+  # Filter data based on the specified years, non-zero total greenhouse gas per capita values, and country
   plot_df = subset(input, year>=year1 & year<=year2 & ghg_per_capita!=0 & country == coun)
-  g1 = ggplot(plot_df, aes(x = year, y = ghg_per_capita, color = country)) + geom_line() + geom_point(size = 1, alpha = 0.8) +
-    ylab("total_greenhouse_gas_per_capita") +  xlab("Year") + theme_bw() + 
-    theme(legend.title = element_blank(), legend.position = "", plot.title = element_text(size=10), 
-          plot.margin = margin(5, 12, 5, 5))
-  g1
+  
+  # Create the plot
+  g1 = ggplot(plot_df, aes(x = year, y = ghg_per_capita, color = country)) + 
+    geom_line() + 
+    geom_point(size = 1, alpha = 0.8) +
+    ylab("Total greenhouse gas emission per capita") + 
+    xlab("Year") + 
+    theme_bw() + 
+    theme(legend.title = element_blank(), legend.position = "", plot.title = element_text(size=10), plot.margin = margin(5, 12, 5, 5))
+  
+  return(g1)
 }
 
+# TOTAL GREENHOUSE GAS EMISSIONS PER GDP BY YEAR
+# This function plots total greenhouse gas emissions per GDP over a specified range of years for a given country.
 total_ghg_per_gdp<-function(input, coun, year1, year2) {
+  # Filter data based on the specified years, non-zero total greenhouse gas per GDP values, and country
   plot_df = subset(input, year>=year1 & year<=year2 & ghg_per_gdp!=0 & country == coun)
-  g1 = ggplot(plot_df, aes(x = year, y = ghg_per_gdp, color = country)) + geom_line() + geom_point(size = 1, alpha = 0.8) +
-    ylab("total_greenhouse_gas_per_gdp") +  xlab("Year") + theme_bw() + 
-    theme(legend.title = element_blank(), legend.position = "", plot.title = element_text(size=10), 
-          plot.margin = margin(5, 12, 5, 5))
-  g1
+  
+  # Create the plot
+  g1 = ggplot(plot_df, aes(x = year, y = ghg_per_gdp, color = country)) + 
+    geom_line() + 
+    geom_point(size = 1, alpha = 0.8) +
+    ylab("Total greenhouse gas emission per GDP") + 
+    xlab("Year") + 
+    theme_bw() + 
+    theme(legend.title = element_blank(), legend.position = "", plot.title = element_text(size=10), plot.margin = margin(5, 12, 5, 5))
+  
+  return(g1)
 }
 
-# comparing graph functions
+# Note: The structure of these functions is consistent. Each function:
+# 1. Filters the data based on a given metric, date range, and country.
+# 2. Constructs a line plot for the specific metric.
+# 3. Applies consistent theming and labeling to the plot.
+# 4. Returns the generated plot.
+
+
+# COMPARISON FUNCTION FOR EMISSION DATA
+# This function aggregates the emission data for a specified year and produces a bar plot comparing 
+# the total emissions for the selected emission types.
+
+# Parameters:
+# which_year: Integer. The specific year for which the emission data should be aggregated.
+# checker: List. A list of emission types to be compared. Valid entries include "total_ghg", "methane", and "nitrous_oxide".
 comparison <- function(which_year, checker = list("total_ghg", "methane", "nitrous_oxide")){
   df <- data.frame(type = 0,
                    emission = 0)

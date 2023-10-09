@@ -1,0 +1,46 @@
+﻿Date,Task,Time,Status,Description
+Aug 25,Find Dataset,80,In Progress,Determine topic for dataset, choosing green house gas
+Aug 26,Find Dataset,120,In Progress,Look into various websites for datasets, including github, kaggle
+Aug 27,,,,
+Aug 28,,,,
+Aug 29,,,,
+Aug 30,,,,
+Aug 31,,,,
+Sep 01,,,,
+Sep 02,Find Dataset,70,Complete,Find proper dataset on github, which is originally from OurWroldData, push the dataset into gi in the data filethub
+Sep 03,Prepare Discussion,60,Complete,Gathering information for discussion, prepare essential points for my dataset
+Sep 04,,,,
+Sep 05,,,,
+Sep 06,Data Cleaning,100,In Progress,Carrying on data cleaning to get rid of unrelated data, create manipulate.rmd and push it to github
+Sep 07,,,,
+Sep 08,,,,
+Sep 09,Data Cleaning,120,Complete,Completing several visualizations on general information of the dataset, push the cleaned dataset to github
+Sep 10,,,,
+Sep 11,,,,
+Sep 12,,,,
+Sep 13,Ethics Reflection,80,In Progress,Finishing task 1 of Ethics Reflection.
+Sep 14,Ethics Reflection,60,Complete,Finishing task 2 and 3 of Ethics Reflection, submit to Gradescope.
+Sep 15,,,,
+Sep 16,Data Description,40,Complete,Working on data description, finish data description report and push to github.
+Sep 17,,,,
+Sep 18,,,,
+Sep 19,,,,
+Sep 20,Brainstorming App Structure,180,Complete,Determining visualizations including in my app, which has three main components.
+Sep 21,,,,
+Sep 22,Map,200,In Progress,Using bootstrap to create the world map for greenhouse gas emission. This visualization includes selection menu.
+Sep 23,Map,360,Complete,Finishing the map with different types of greenhouse gas and year to choose from.
+Sep 24,Line Charts,220,In Progress,Creating interactive line charts to display the trends of greenhouse gas emission.
+Sep 25,Shinyio,60,Complete,Create the shinyio server, push the entire app to cloud to allow visit online.
+Sep 26,Line Charts,240,Complete,Finishing the interative line charts, preparing for the presentation of the screenshot.
+Sep 27,,,,
+Sep 28,,,,
+Sep 29,,,,
+Sep 30,,,,
+Oct 01,,,,
+Oct 02,,,,
+Oct 03,Bar Charts & Feedback Improvements,200,In Progress,Creating bar charts to allow comparisons between different types of greenhouse gases.
+Oct 04,Bar Charts & Feedback Improvements,300,Complete,Finishing the bar charts and based on the feedback given in class, change year selection and coloring, push everything to shinyio.
+Oct 05,,,,
+Oct 06,,,,
+Oct 07,Summarizing Documents,240,In Progress,Finishing recording the video and project documentation.
+Oct 08,Summarizing Documents,180,Complete,Finishing time-log and visit Vivero Digital Fellows Program, summing everything up and push to github.

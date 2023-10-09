@@ -1,0 +1,37 @@
+---
+title: "Time Log/Chart"
+output: html_document
+date: '2023-10-08'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Time Log
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(lubridate)
+library(RColorBrewer)
+library(scales)
+library(readr)
+
+time_log <- read_csv("data/time_log.csv")
+# All the information for the Time log is ontained in time_log.csv
+```
+
+## Chart
+```{r}
+# Handle NA in Time by setting it to 0
+time_log$Time[is.na(time_log$Time)] <- 0
+
+# Plot using ggplot2
+ggplot(time_log, aes(x=Date, y=Time, fill=Task)) +
+  geom_bar(stat='identity', position='dodge') +
+  labs(title="Time Spent on Different Tasks Over Dates", x="Date", y="Time Spent") +
+  theme_minimal() +
+  theme(axis.text.x=element_text(angle=45, hjust=1, size=4)) +
+  scale_fill_manual(values=hue_pal()(length(unique(time_log$Task))))
+
+```
